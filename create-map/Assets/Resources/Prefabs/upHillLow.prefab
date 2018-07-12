@@ -56,7 +56,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4227582124199926}
   m_Layer: 0
-  m_Name: upHill_Low
+  m_Name: upHillLow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
