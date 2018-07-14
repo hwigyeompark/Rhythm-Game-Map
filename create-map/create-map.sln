@@ -1,7 +1,6 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "create-map", "Assembly-CSharp.csproj", "{8D35151A-2309-4CA9-2211-9367F6A7F616}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{8D35151A-2309-4CA9-2211-9367F6A7F616}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

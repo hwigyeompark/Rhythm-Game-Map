@@ -1,89 +1,108 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
+using System.Linq;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour {
+public class gamemanager : MonoBehaviour {
 
-	public List<GameObject> prefabList = new List<GameObject>();
-	public List<GameObject> mapLogList = new List<GameObject>();
-	public Vector3 nextPosition;
-	public string[] codeArr = new string[100];
-	public int direction;
+	public List<GameObject> prefabList;
+	public string code;
+    private Vector3 nextPosition;
+	public List<GameObject> mapLogList;
+	// 0: x+ 오른쪽, 1: z- 아랫쪽, 2: x- 왼쪽, 3: z+ 위쪽
+	private int nextDirection;
 	private int firstMapSize;
-	GameObject[] gameObjectArr = new GameObject[100];
-
+	// Use this for initialization
 	void Start () {
-		direction = 0;
+		nextDirection = 0;
 		firstMapSize = 5;
+		mapLogList = new List<GameObject>();
+		nextPosition = new Vector3 (0, 0, 0);
 		StartCoroutine ("initiateMap");
 	}
-		
+	
+	// Update is called once per frame
 	void Update () {
-
+		
 	}
 
-//	IEnumerator loadPrefab(){
-//		GameObject curveLeft = Instantiate (Resources.Load ("/Prefabs/curveLeft")) as GameObject;
-//		prefabList.Add(curveLeft);
-//		GameObject curveRight = Instantiate (Resources.Load ("/Prefabs/curveRight")) as GameObject;
-//		prefabList.Add(curveRight);
-//		GameObject direct = Instantiate (Resources.Load ("/Prefabs/direct")) as GameObject;
-//		prefabList.Add(direct);
-//		GameObject downHill = Instantiate (Resources.Load ("/Prefabs/downHill")) as GameObject;
-//		prefabList.Add(downHill);
-//		GameObject downHillLow = Instantiate (Resources.Load ("/Prefabs/downHillLow")) as GameObject;
-//		prefabList.Add(downHillLow);
-//		GameObject turnLeft = Instantiate (Resources.Load ("/Prefabs/turnLeft")) as GameObject;
-//		prefabList.Add(turnLeft);
-//		GameObject turnRight = Instantiate (Resources.Load ("/Prefabs/turnRight")) as GameObject;
-//		prefabList.Add(turnRight);
-//		GameObject upHill = Instantiate (Resources.Load ("/Prefabs/upHill")) as GameObject;
-//		prefabList.Add(upHill);
-//		GameObject upHillLow = Instantiate (Resources.Load ("/Prefabs/upHillLow")) as GameObject;
-//		prefabList.Add(upHillLow);
-//	}
-//
-	
-	IEnumerator searchPatternCorrect(){
-		for (int i = 0; i < gameObjectArr.Length; i++) {
-			if (codeArr.GetValue()) {
-				GameObject recyclePattern = Instantiate (prefabList [int.Parse (code.Substring(i, 1))], new Vector3 (i * 6.0F, 0, 0), Quaternion.identity);
-				mapLogList.Add (recyclePattern);
+	void cameraPosition()
+	{
+		float lastObjPosZ = mapLogList[mapLogList.Count - 1].transform.position.z;
+		if (Camera.current.transform.position.z < lastObjPosZ)
+		{
+			// ReSharper disable once EmptyForStatement
+			for (int i = 0; i < mapLogList.Count; i++)
+			{
+				mapLogList[i].SetActive(false);
 			}
 		}
 	}
-
+	
 	IEnumerator initiateMap()
 	{
-		if (code.Length < firstMapSize) {
-			for (int i = 0; i < code.Length; i++) {
-				GameObject pattern = Instantiate (prefabList [int.Parse (code.Substring(i, 1))], new Vector3 (i * 6.0F, 0, 0), Quaternion.identity);
+		int initiateMax = code.Length < firstMapSize ? code.Length : firstMapSize;
 
-				mapLogList.Add (pattern);
-			}
-		} else {
-			for (int i = 0; i < firstMapSize; i++) {
-				GameObject pattern = Instantiate (prefabList [int.Parse (code.Substring(i, 1))], new Vector3 (i * 6.0F, 0, 0), Quaternion.identity);
-
-				mapLogList.Add (pattern);
-			}
-			StartCoroutine ("createMap");
+		for (int i = 0; i < initiateMax; i++) {
+			StartCoroutine("set", int.Parse (code.Substring(i, 1)));
 		}
+		StartCoroutine ("createMap", initiateMax);
+
 		yield return null;
 	}
 
-	IEnumerator createMap()
-	{
-		/*할거*/
-		for(int i=firstMapSize;i<code.Length;i++){
+	IEnumerator createMap(int createdNum)
+    {
+        /*할거*/
+		for(int i=createdNum;i<code.Length;i++){
 			yield return new WaitForSeconds(0.5f); //딜레이
-			if (prefabList.Count > int.Parse (code.Substring(i, 1)))
-			{
-				GameObject pattern = Instantiate(prefabList [int.Parse (code.Substring(i, 1))], new Vector3(i * 6.0F, 0, 0), Quaternion.identity);
-				mapLogList.Add (pattern);
-			}
+			StartCoroutine("set", int.Parse (code.Substring(i, 1)));
 		}
+	    StartCoroutine("cameraPosition");
+    }
+
+	IEnumerator set(int prefabNum){
+
+		Vector3 position = nextPosition;
+		int direction = nextDirection;
+
+		switch (prefabNum) {
+		case 1:
+			nextPosition.y += 2.034F;
+			break;
+		case 2:
+			nextPosition.y -= 2.034F;
+			break;
+		case 3:
+			nextPosition.y += 1.2F;
+			break;
+		case 4:
+			nextPosition.y -= 1.2F;
+			break;
+		}
+
+		if (prefabNum < 5) {
+			if (direction % 2 == 1) {
+				nextPosition.z += new int[]{-4, 4}[direction/2];
+			}else{
+				nextPosition.x += new int[]{4, -4}[direction/2];
+			}
+		}else if(prefabNum < 7){
+			nextPosition.z += new int[]{3, -3, -3, 3}[direction];
+			nextPosition.x += new int[]{3, -3}[direction/2];
+			nextDirection = (nextDirection + 3)%4;
+		}else if(prefabNum < 9){
+			nextPosition.x += new int[]{3, -3, -3, 3}[direction];
+			nextPosition.z += new int[]{-3, 3}[direction/2];
+			nextDirection = (nextDirection + 1)%4;
+		}else{
+			yield return null;
+		}
+
+		GameObject pattern = Instantiate(prefabList [prefabNum], position, Quaternion.Euler(0, direction*90, 0));
+		mapLogList.Add (pattern);
+
+		yield return null;
+	
 	}
 }
