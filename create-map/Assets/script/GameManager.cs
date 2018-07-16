@@ -1,7 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
+using ProBuilder2.Common;
 using UnityEngine;
+using UnityEngine.Assertions.Comparers;
+using Random = UnityEngine.Random;
 
 public class gamemanager : MonoBehaviour {
 
@@ -12,12 +17,16 @@ public class gamemanager : MonoBehaviour {
 	// 0: x+ 오른쪽, 1: z- 아랫쪽, 2: x- 왼쪽, 3: z+ 위쪽
 	private int nextDirection;
 	private int firstMapSize;
+	public float createTrapTime = 7.0f;
+	GameObject []trapArray = new GameObject[5];
+	
 	// Use this for initialization
 	void Start () {
 		nextDirection = 0;
 		firstMapSize = 5;
 		mapLogList = new List<GameObject>();
 		nextPosition = new Vector3 (0, 0, 0);
+		
 		StartCoroutine ("initiateMap");
 	}
 	
@@ -26,6 +35,29 @@ public class gamemanager : MonoBehaviour {
 		
 	}
 
+	IEnumerator createTrap()
+	{
+		GameObject coneLeft = Resources.Load("Prefabs/Trap/4Cone_Left") as GameObject;	
+		GameObject coneRight = Resources.Load("Prefabs/Trap/4Cone_Right") as GameObject;
+		GameObject jump = Resources.Load("Prefabs/Trap/jumpTrap") as GameObject;
+		GameObject jumpLeft = Resources.Load("Prefabs/Trap/jumpTrap_Left") as GameObject;
+		GameObject jumpRight = Resources.Load("Prefabs/Trap/jumpTrap_Right") as GameObject;
+
+		trapArray[0] = coneLeft;
+		trapArray[1] = coneRight;
+		trapArray[2] = jump;
+		trapArray[3] = jumpLeft;
+		trapArray[4] = jumpRight;
+
+		for (int i = 0; i < mapLogList.Count; i++)
+		{
+			Instantiate(trapArray[Random.Range(0,5)], nextPosition, Quaternion.identity);
+			yield return new WaitForSeconds(createTrapTime);
+			StopCoroutine("createTrap");
+		}
+	}
+	
+	
 	void cameraPosition()
 	{
 		float lastObjPosZ = mapLogList[mapLogList.Count - 1].transform.position.z;
@@ -42,9 +74,8 @@ public class gamemanager : MonoBehaviour {
 	IEnumerator initiateMap()
 	{
 		int initiateMax = code.Length < firstMapSize ? code.Length : firstMapSize;
-
 		for (int i = 0; i < initiateMax; i++) {
-			StartCoroutine("set", int.Parse (code.Substring(i, 1)));
+			StartCoroutine("set", int.Parse (code.Substring(i, 1)));	
 		}
 		StartCoroutine ("createMap", initiateMax);
 
@@ -54,7 +85,9 @@ public class gamemanager : MonoBehaviour {
 	IEnumerator createMap(int createdNum)
     {
         /*할거*/
-		for(int i=createdNum;i<code.Length;i++){
+		for(int i=createdNum;i<code.Length;i++)
+		{
+			StartCoroutine("createTrap");
 			yield return new WaitForSeconds(0.5f); //딜레이
 			StartCoroutine("set", int.Parse (code.Substring(i, 1)));
 		}
