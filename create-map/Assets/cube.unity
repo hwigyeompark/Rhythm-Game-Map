@@ -324,7 +324,6 @@ MonoBehaviour:
   - {fileID: 1122582304720622, guid: ffac233be4efdf740b89705284bd019d, type: 2}
   code: 0000000050070060008001234567878564012345678
   mapLogList: []
-  createTrapTime: 1
 --- !u!4 &1220635962
 Transform:
   m_ObjectHideFlags: 0

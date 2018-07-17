@@ -17,7 +17,6 @@ public class gamemanager : MonoBehaviour {
 	// 0: x+ 오른쪽, 1: z- 아랫쪽, 2: x- 왼쪽, 3: z+ 위쪽
 	private int nextDirection;
 	private int firstMapSize;
-	public float createTrapTime = 7.0f;
 	GameObject []trapArray = new GameObject[5];
 	
 	// Use this for initialization
@@ -25,8 +24,7 @@ public class gamemanager : MonoBehaviour {
 		nextDirection = 0;
 		firstMapSize = 5;
 		mapLogList = new List<GameObject>();
-		nextPosition = new Vector3 (0, 0, 0);
-		
+		nextPosition = new Vector3 (0, 0, 0);		
 		StartCoroutine ("initiateMap");
 	}
 	
@@ -37,6 +35,8 @@ public class gamemanager : MonoBehaviour {
 
 	IEnumerator createTrap()
 	{
+		float createTrapTime = 12.0f;
+		int rotateTrap = nextDirection;
 		GameObject coneLeft = Resources.Load("Prefabs/Trap/4Cone_Left") as GameObject;	
 		GameObject coneRight = Resources.Load("Prefabs/Trap/4Cone_Right") as GameObject;
 		GameObject jump = Resources.Load("Prefabs/Trap/jumpTrap") as GameObject;
@@ -51,25 +51,12 @@ public class gamemanager : MonoBehaviour {
 
 		for (int i = 0; i < mapLogList.Count; i++)
 		{
-			Instantiate(trapArray[Random.Range(0,5)], nextPosition, Quaternion.identity);
+			Instantiate(trapArray[Random.Range(0, 5)], nextPosition, Quaternion.Euler(0, rotateTrap * 90, 0));
 			yield return new WaitForSeconds(createTrapTime);
 			StopCoroutine("createTrap");
 		}
 	}
 	
-	
-	void cameraPosition()
-	{
-		float lastObjPosZ = mapLogList[mapLogList.Count - 1].transform.position.z;
-		if (Camera.current.transform.position.z < lastObjPosZ)
-		{
-			// ReSharper disable once EmptyForStatement
-			for (int i = 0; i < mapLogList.Count; i++)
-			{
-				mapLogList[i].SetActive(false);
-			}
-		}
-	}
 	
 	IEnumerator initiateMap()
 	{
@@ -87,11 +74,10 @@ public class gamemanager : MonoBehaviour {
         /*할거*/
 		for(int i=createdNum;i<code.Length;i++)
 		{
-			StartCoroutine("createTrap");
 			yield return new WaitForSeconds(0.5f); //딜레이
 			StartCoroutine("set", int.Parse (code.Substring(i, 1)));
+			StartCoroutine("createTrap");
 		}
-	    StartCoroutine("cameraPosition");
     }
 
 	IEnumerator set(int prefabNum){
